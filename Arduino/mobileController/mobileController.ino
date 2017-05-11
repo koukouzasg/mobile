@@ -7,6 +7,7 @@
  
 #include <AFMotor.h>
 #include <Servo.h>
+#include <math.h>
 
 #define echoPin 24 // Echo Pin
 #define trigPin 26 // Trigger Pin
@@ -20,7 +21,7 @@ AF_DCMotor rightMotor(2);  // M2 - RIGHT motor
 
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
-long duration, distance; // Duration used to calculate distance
+long duration, distance=0, prevDistance=0; // Duration used to calculate distance
 int leftMotorSpeed = 5;
 int rightMotorSpeed = 5;
 
@@ -34,8 +35,8 @@ void setup() {
   Serial.println("Mobile robot up and ready...");
   pinMode(objAvoidPin, INPUT);
   
-  //pinMode(trigPin, OUTPUT);
-  //pinMode(echoPin, INPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   //pinMode(LEDPin, OUTPUT); // Use LED indicator (if required)
   pinMode(leftEncPin, INPUT);
   pinMode(rightEncPin, INPUT);
@@ -47,10 +48,7 @@ void setup() {
  
   leftMotor.run(RELEASE);
   rightMotor.run(RELEASE);
-  delay(3000);
-}
 
-void checkUltrasonicDistance() {
   digitalWrite(trigPin, LOW); 
   delayMicroseconds(2); 
   
@@ -62,24 +60,43 @@ void checkUltrasonicDistance() {
   
   //Calculate the distance (in cm) based on the speed of sound.
   distance = duration/58.2;
-  Serial.println(distance);
-  if ( (distance >= 0) && (distance <= 25)) {  // Object detected
-    
-    //posStop();
+  prevDistance = distance;
+  delay(3000);
+}
+
+void updateFrontDistance() {
+  digitalWrite(trigPin, LOW); 
+  delayMicroseconds(2); 
+  
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10); 
+  
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  
+  //Calculate the distance (in cm) based on the speed of sound.
+  distance = duration/58.2;
+  /*if( abs(distance - prevDistance) > 10 ) {
+    distance = prevDistance;
+  }else {
+    prevDistance = distance;
   }
+  Serial.print("Front distance: ");
+  Serial.println(distance);
+  */
 }
 
 void moveForward(){
-  Serial.print("Moving forward...");
+  Serial.println("\tMoving forward...");
   leftMotor.run(FORWARD);
   rightMotor.run(FORWARD);
   
-  leftMotor.setSpeed(leftMotorSpeed);
-  rightMotor.setSpeed(rightMotorSpeed);
+  leftMotor.setSpeed(180);
+  rightMotor.setSpeed(180);
 }
 
 void posStop(){
-  Serial.println("Stoping the vehicle...");
+  Serial.println("\tStoping...");
   leftMotor.run(RELEASE);
   rightMotor.run(RELEASE);
 }
@@ -92,12 +109,10 @@ void moveLeft(){
   rightMotor.setSpeed(0);
 }
 
-void moveRight(){
-  Serial.print("moving right");
-  leftMotor.setSpeed(leftMotorSpeed);
+void turnRight(){
+  Serial.println("\tTurning right...");
+  leftMotor.setSpeed(200);
   rightMotor.setSpeed(0);
-  delay(1200);
-  leftMotor.setSpeed(0);
 }
 
 void checkIRDistance() {
@@ -135,7 +150,7 @@ void findEmptyRoute() {
     Serial.println("Increasing servo ");
     servo.write(i);
       if(distance <=25) {
-        checkUltrasonicDistance();
+        updateFrontDistance();
         Serial.print("Distance: ");
         Serial.println(distance);
       }
@@ -143,13 +158,24 @@ void findEmptyRoute() {
   }
 }
 
-void loop() {
+void FDSController() {
+  if ( (distance >= 35) && (distance <= 100)) {  // Object detected
+    moveForward();
+    delay(1000);
+  }else {
+    turnRight();
+    delay(500);
+  }
+}
 
-  findEmptyRoute();
+void loop() {
+  updateFrontDistance();
+  FDSController();
+  
+  //findEmptyRoute();
   //readEncoders();
   //calculateEncTime();
   
-  //moveForward();
   //checkIRDistance();
   //checkUltrasonicDistance();
 
