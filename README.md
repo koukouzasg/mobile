@@ -1,12 +1,12 @@
-#2 Wheel Mobile Robot
+# 2 Wheel Mobile Robot
 This project demonestrates a two wheel mobile robot using Arduino microcontroller. This project is developed at 2017 by the team mentioned below.
 
 ![Alt text](https://github.com/ieeesbuoi/mobile/blob/master/mobilerobot.jpg "2Wheel Mobile Robot")
 
-#Android Application
+# Android Application
 We have developed an android application to control the mobile robot. 
 
-#Developer Team
+# Developer Team
 Koukouzas Giorgos
 Papadatos Giorgos
 Sianko Tayfoun
@@ -14,5 +14,5 @@ Giannis Rizos
 Thanasis Pap
 Tzivaras Vasilis
 
-#Contact
+# Contact
 ieeesb (at) cs.uoi.gr
